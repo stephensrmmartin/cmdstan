@@ -895,6 +895,11 @@ int command(int argc, const char *argv[]) {
           output_samples, interrupt, logger, init_writer, sample_writer, 
           diagnostic_writer, rank);
     }
+      // return_code = stan::services::experimental::advi::lowrank(
+      //     model, *init_context, random_seed, id, init_radius, grad_samples,
+      //     elbo_samples, max_iterations, tol_rel_obj, rank, eta, adapt_engaged,
+      //     adapt_iterations, eval_elbo, output_samples, interrupt, logger,
+      //     init_writer, sample_writer, diagnostic_writer);
   }
   stan::math::profile_map &profile_data = get_stan_profile_data();
   if (profile_data.size() > 0) {
