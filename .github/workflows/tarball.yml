@@ -10,15 +10,15 @@ name: CmdStan tarball builder
       cmdstan_repo:
         description: 'CmdStan repo'
         required: true
-        default: 'stan-dev/cmdstan'
+        default: 'stephensrmmartin/cmdstan'
       cmdstan_branch:
           description: 'CmdStan branch'
           required: true
-          default: 'develop'
+          default: 'feature/lowrank'
       stan_repo:
         description: 'Stan repo'
         required: true
-        default: 'stan-dev/stan'
+        default: 'stephensrmmartin/stan'
       stan_branch:
           description: 'Stan branch'
           required: true
