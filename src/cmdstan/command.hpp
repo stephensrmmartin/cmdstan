@@ -29,6 +29,7 @@
 #include <stan/services/diagnose/diagnose.hpp>
 #include <stan/services/experimental/advi/fullrank.hpp>
 #include <stan/services/experimental/advi/meanfield.hpp>
+#include <stan/services/experimental/advi/lowrank.hpp>
 #include <stan/services/optimize/bfgs.hpp>
 #include <stan/services/optimize/lbfgs.hpp>
 #include <stan/services/optimize/newton.hpp>
@@ -835,17 +836,25 @@ int command(int argc, const char *argv[]) {
         = dynamic_cast<int_argument *>(
               parser.arg("method")->arg("variational")->arg("elbo_samples"))
               ->value();
-    int max_iterations
+    int iter
         = dynamic_cast<int_argument *>(
               parser.arg("method")->arg("variational")->arg("iter"))
-              ->value();
-    double tol_rel_obj
-        = dynamic_cast<real_argument *>(
-              parser.arg("method")->arg("variational")->arg("tol_rel_obj"))
               ->value();
     double eta = dynamic_cast<real_argument *>(
                      parser.arg("method")->arg("variational")->arg("eta"))
                      ->value();
+    int eval_window = dynamic_cast<int_argument *>
+      (parser.arg("method")->arg("variational")->arg("eval_window"))->value();
+    double window_size = dynamic_cast<real_argument *>
+      (parser.arg("method")->arg("variational")->arg("window_size"))->value();
+    double rhat_cut = dynamic_cast<real_argument *>
+      (parser.arg("method")->arg("variational")->arg("rhat_cut"))->value();
+    double mcse_cut = dynamic_cast<real_argument *>
+      (parser.arg("method")->arg("variational")->arg("mcse_cut"))->value();
+    double ess_cut = dynamic_cast<real_argument *>
+      (parser.arg("method")->arg("variational")->arg("ess_cut"))->value();
+    int num_chains = dynamic_cast<int_argument *>
+      (parser.arg("method")->arg("variational")->arg("num_chains"))->value();
     bool adapt_engaged = dynamic_cast<bool_argument *>(parser.arg("method")
                                                            ->arg("variational")
                                                            ->arg("adapt")
@@ -856,10 +865,6 @@ int command(int argc, const char *argv[]) {
                                                             ->arg("adapt")
                                                             ->arg("iter"))
                                ->value();
-    int eval_elbo
-        = dynamic_cast<int_argument *>(
-              parser.arg("method")->arg("variational")->arg("eval_elbo"))
-              ->value();
     int output_samples
         = dynamic_cast<int_argument *>(
               parser.arg("method")->arg("variational")->arg("output_samples"))
@@ -868,16 +873,33 @@ int command(int argc, const char *argv[]) {
     if (algo->value() == "fullrank") {
       return_code = stan::services::experimental::advi::fullrank(
           model, *init_context, random_seed, id, init_radius, grad_samples,
-          elbo_samples, max_iterations, tol_rel_obj, eta, adapt_engaged,
-          adapt_iterations, eval_elbo, output_samples, interrupt, logger,
-          init_writer, sample_writer, diagnostic_writer);
+          elbo_samples, iter, eta, eval_window, window_size, rhat_cut,
+          mcse_cut, ess_cut, num_chains, adapt_engaged, adapt_iterations, 
+          output_samples, interrupt, logger, init_writer, sample_writer, 
+          diagnostic_writer);
     } else if (algo->value() == "meanfield") {
       return_code = stan::services::experimental::advi::meanfield(
           model, *init_context, random_seed, id, init_radius, grad_samples,
-          elbo_samples, max_iterations, tol_rel_obj, eta, adapt_engaged,
-          adapt_iterations, eval_elbo, output_samples, interrupt, logger,
-          init_writer, sample_writer, diagnostic_writer);
+          elbo_samples, iter, eta, eval_window, window_size, rhat_cut,
+          mcse_cut, ess_cut, num_chains, adapt_engaged, adapt_iterations, 
+          output_samples, interrupt, logger, init_writer, sample_writer, 
+          diagnostic_writer);
+    } else if (algo->value() == "lowrank") {
+      int rank
+          = dynamic_cast<int_argument *>(
+                parser.arg("method")->arg("variational")->arg("rank"))->value();          
+      return_code = stan::services::experimental::advi::lowrank(
+          model, *init_context, random_seed, id, init_radius, grad_samples,
+          elbo_samples, iter, eta, eval_window, window_size, rhat_cut,
+          mcse_cut, ess_cut, num_chains, adapt_engaged, adapt_iterations, 
+          output_samples, interrupt, logger, init_writer, sample_writer, 
+          diagnostic_writer, rank);
     }
+      // return_code = stan::services::experimental::advi::lowrank(
+      //     model, *init_context, random_seed, id, init_radius, grad_samples,
+      //     elbo_samples, max_iterations, tol_rel_obj, rank, eta, adapt_engaged,
+      //     adapt_iterations, eval_elbo, output_samples, interrupt, logger,
+      //     init_writer, sample_writer, diagnostic_writer);
   }
   stan::math::profile_map &profile_data = get_stan_profile_data();
   if (profile_data.size() > 0) {
